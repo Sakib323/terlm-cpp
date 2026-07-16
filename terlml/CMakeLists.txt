@@ -63,3 +63,28 @@ add_test(
     NAME terlml-hgrn-neon-parity
     COMMAND test-terlml-hgrn-neon
 )
+
+add_library(terlml-causal-conv STATIC
+    terlml-causal-conv.cpp
+)
+
+target_include_directories(terlml-causal-conv
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_features(terlml-causal-conv PUBLIC cxx_std_20)
+
+add_executable(test-terlml-causal-conv
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-causal-conv.cpp
+)
+
+target_link_libraries(test-terlml-causal-conv
+    PRIVATE
+        terlml-causal-conv
+)
+
+add_test(
+    NAME terlml-causal-conv
+    COMMAND test-terlml-causal-conv
+)
