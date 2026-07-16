@@ -47,3 +47,10 @@ build/
 logs/
 # TerLM local build output
 /build/
+
+# CMake build directories
+/build-*/
+
+# Generated BitNet TL1 lookup-table kernel configuration
+/include/bitnet-lut-kernels.h
+/include/kernel_config.ini

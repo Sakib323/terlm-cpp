@@ -76,3 +76,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LlamaConfig.cmake
 
 set_target_properties(llama PROPERTIES PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/llama.h)
 install(TARGETS llama LIBRARY PUBLIC_HEADER)
+
+include(CTest)
+add_subdirectory(terlml)
