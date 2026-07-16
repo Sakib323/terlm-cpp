@@ -145,3 +145,18 @@ add_test(
     NAME terlml-hgrn-attention-block
     COMMAND test-terlml-hgrn-attention-block
 )
+
+add_executable(test-terlml-hgrn-attention-block-parity
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-hgrn-attention-block-parity.cpp
+)
+
+target_link_libraries(test-terlml-hgrn-attention-block-parity
+    PRIVATE
+        terlml-hgrn-attention-block
+)
+
+add_test(
+    NAME terlml-hgrn-attention-block-pytorch-parity
+    COMMAND test-terlml-hgrn-attention-block-parity
+            ${CMAKE_SOURCE_DIR}/tests/fixtures/hgrn-attention-block-parity-f32.bin
+)
