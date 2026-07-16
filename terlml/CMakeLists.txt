@@ -113,3 +113,35 @@ add_test(
     NAME terlml-rmsnorm-gate
     COMMAND test-terlml-rmsnorm-gate
 )
+
+add_library(terlml-hgrn-attention-block STATIC
+    terlml-hgrn-attention-block.cpp
+)
+
+target_include_directories(terlml-hgrn-attention-block
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_features(terlml-hgrn-attention-block PUBLIC cxx_std_20)
+
+target_link_libraries(terlml-hgrn-attention-block
+    PUBLIC
+        terlml-causal-conv
+        terlml-hgrn-reference
+        terlml-rmsnorm-gate
+)
+
+add_executable(test-terlml-hgrn-attention-block
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-hgrn-attention-block.cpp
+)
+
+target_link_libraries(test-terlml-hgrn-attention-block
+    PRIVATE
+        terlml-hgrn-attention-block
+)
+
+add_test(
+    NAME terlml-hgrn-attention-block
+    COMMAND test-terlml-hgrn-attention-block
+)
