@@ -88,3 +88,28 @@ add_test(
     NAME terlml-causal-conv
     COMMAND test-terlml-causal-conv
 )
+
+add_library(terlml-rmsnorm-gate STATIC
+    terlml-rmsnorm-gate.cpp
+)
+
+target_include_directories(terlml-rmsnorm-gate
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_features(terlml-rmsnorm-gate PUBLIC cxx_std_20)
+
+add_executable(test-terlml-rmsnorm-gate
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-rmsnorm-gate.cpp
+)
+
+target_link_libraries(test-terlml-rmsnorm-gate
+    PRIVATE
+        terlml-rmsnorm-gate
+)
+
+add_test(
+    NAME terlml-rmsnorm-gate
+    COMMAND test-terlml-rmsnorm-gate
+)
