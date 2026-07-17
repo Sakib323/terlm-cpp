@@ -274,3 +274,28 @@ add_test(
     NAME terlml-hgrn-lower-bounds
     COMMAND test-terlml-hgrn-lower-bounds
 )
+
+add_library(terlml-rmsnorm STATIC
+    terlml-rmsnorm.cpp
+)
+
+target_include_directories(terlml-rmsnorm
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_features(terlml-rmsnorm PUBLIC cxx_std_20)
+
+add_executable(test-terlml-rmsnorm
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-rmsnorm.cpp
+)
+
+target_link_libraries(test-terlml-rmsnorm
+    PRIVATE
+        terlml-rmsnorm
+)
+
+add_test(
+    NAME terlml-rmsnorm
+    COMMAND test-terlml-rmsnorm
+)
