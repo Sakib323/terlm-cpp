@@ -249,3 +249,28 @@ add_test(
     NAME terlml-hgrn-decoder-layer
     COMMAND test-terlml-hgrn-decoder-layer
 )
+
+add_library(terlml-hgrn-lower-bounds STATIC
+    terlml-hgrn-lower-bounds.cpp
+)
+
+target_include_directories(terlml-hgrn-lower-bounds
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_features(terlml-hgrn-lower-bounds PUBLIC cxx_std_20)
+
+add_executable(test-terlml-hgrn-lower-bounds
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-hgrn-lower-bounds.cpp
+)
+
+target_link_libraries(test-terlml-hgrn-lower-bounds
+    PRIVATE
+        terlml-hgrn-lower-bounds
+)
+
+add_test(
+    NAME terlml-hgrn-lower-bounds
+    COMMAND test-terlml-hgrn-lower-bounds
+)
