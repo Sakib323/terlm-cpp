@@ -160,3 +160,29 @@ add_test(
     COMMAND test-terlml-hgrn-attention-block-parity
             ${CMAKE_SOURCE_DIR}/tests/fixtures/hgrn-attention-block-parity-f32.bin
 )
+
+add_library(terlml-fused-bitlinear STATIC
+    terlml-fused-bitlinear.cpp
+)
+
+target_include_directories(terlml-fused-bitlinear
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_features(terlml-fused-bitlinear PUBLIC cxx_std_20)
+
+add_executable(test-terlml-fused-bitlinear-parity
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-fused-bitlinear-parity.cpp
+)
+
+target_link_libraries(test-terlml-fused-bitlinear-parity
+    PRIVATE
+        terlml-fused-bitlinear
+)
+
+add_test(
+    NAME terlml-fused-bitlinear-pytorch-parity
+    COMMAND test-terlml-fused-bitlinear-parity
+            ${CMAKE_SOURCE_DIR}/tests/fixtures/fused-bitlinear-parity-f32.bin
+)
