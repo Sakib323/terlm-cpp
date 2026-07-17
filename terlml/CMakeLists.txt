@@ -332,3 +332,18 @@ add_test(
     NAME terlml-hgrn-model
     COMMAND test-terlml-hgrn-model
 )
+
+add_executable(test-terlml-hgrn-model-parity
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-hgrn-model-parity.cpp
+)
+
+target_link_libraries(test-terlml-hgrn-model-parity
+    PRIVATE
+        terlml-hgrn-model
+)
+
+add_test(
+    NAME terlml-hgrn-model-pytorch-parity
+    COMMAND test-terlml-hgrn-model-parity
+            ${CMAKE_SOURCE_DIR}/tests/fixtures/hgrn-model-parity-f32.bin
+)
