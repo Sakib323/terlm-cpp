@@ -187,3 +187,34 @@ add_test(
     COMMAND test-terlml-fused-bitlinear-parity
             ${CMAKE_SOURCE_DIR}/tests/fixtures/fused-bitlinear-parity-f32.bin
 )
+
+add_library(terlml-hgrn-mlp STATIC
+    terlml-hgrn-mlp.cpp
+)
+
+target_include_directories(terlml-hgrn-mlp
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_features(terlml-hgrn-mlp PUBLIC cxx_std_20)
+
+target_link_libraries(terlml-hgrn-mlp
+    PUBLIC
+        terlml-fused-bitlinear
+)
+
+add_executable(test-terlml-hgrn-mlp-parity
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-hgrn-mlp-parity.cpp
+)
+
+target_link_libraries(test-terlml-hgrn-mlp-parity
+    PRIVATE
+        terlml-hgrn-mlp
+)
+
+add_test(
+    NAME terlml-hgrn-mlp-pytorch-parity
+    COMMAND test-terlml-hgrn-mlp-parity
+            ${CMAKE_SOURCE_DIR}/tests/fixtures/hgrn-mlp-parity-f32.bin
+)
