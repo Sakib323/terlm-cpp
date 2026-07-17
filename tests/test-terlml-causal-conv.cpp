@@ -111,10 +111,80 @@ bool test_causal_cache_continuation() {
            );
 }
 
+
+bool test_null_bias_matches_zero_bias() {
+    const terlml::causal_conv_shape shape = {
+        .batch = 2,
+        .sequence = 3,
+        .channels = 2,
+        .kernel_size = 4,
+    };
+
+    const std::vector<float> weights = {
+        0.10f, -0.20f, 0.30f, 0.40f,
+        -0.50f, 0.60f, -0.70f, 0.80f,
+    };
+
+    const std::vector<float> zero_bias = {0.0f, 0.0f};
+
+    const std::vector<float> input = {
+        0.10f, -0.20f,
+        0.30f, -0.40f,
+        0.50f, -0.60f,
+        -0.70f, 0.80f,
+        -0.90f, 1.00f,
+        -1.10f, 1.20f,
+    };
+
+    const std::vector<float> initial_cache = {
+        0.05f, -0.10f, 0.15f, -0.20f,
+        0.25f, -0.30f, 0.35f, -0.40f,
+        -0.45f, 0.50f, -0.55f, 0.60f,
+        -0.65f, 0.70f, -0.75f, 0.80f,
+    };
+
+    std::vector<float> zero_bias_output(input.size(), 0.0f);
+    std::vector<float> zero_bias_cache(initial_cache.size(), 0.0f);
+    std::vector<float> null_bias_output(input.size(), 0.0f);
+    std::vector<float> null_bias_cache(initial_cache.size(), 0.0f);
+
+    terlml::causal_depthwise_conv1d_silu_f32(
+        input.data(),
+        weights.data(),
+        zero_bias.data(),
+        initial_cache.data(),
+        zero_bias_output.data(),
+        zero_bias_cache.data(),
+        shape
+    );
+
+    terlml::causal_depthwise_conv1d_silu_f32(
+        input.data(),
+        weights.data(),
+        nullptr,
+        initial_cache.data(),
+        null_bias_output.data(),
+        null_bias_cache.data(),
+        shape
+    );
+
+    return expect_close(
+               "null bias matches explicit zero-bias output",
+               null_bias_output,
+               zero_bias_output
+           ) &&
+           expect_close(
+               "null bias matches explicit zero-bias cache",
+               null_bias_cache,
+               zero_bias_cache
+           );
+}
+
 } // namespace
 
 int main() {
-    if (!test_causal_cache_continuation()) {
+    if (!test_causal_cache_continuation() ||
+        !test_null_bias_matches_zero_bias()) {
         std::cerr << "\nCausal convolution tests failed.\n";
         return EXIT_FAILURE;
     }
