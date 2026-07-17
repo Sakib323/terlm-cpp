@@ -347,3 +347,30 @@ add_test(
     COMMAND test-terlml-hgrn-model-parity
             ${CMAKE_SOURCE_DIR}/tests/fixtures/hgrn-model-parity-f32.bin
 )
+
+add_library(terlml-safetensors STATIC
+    terlml-safetensors.cpp
+)
+
+target_include_directories(terlml-safetensors
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/3rdparty/llama.cpp/common
+)
+
+target_compile_features(terlml-safetensors PUBLIC cxx_std_20)
+
+add_executable(test-terlml-safetensors
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-safetensors.cpp
+)
+
+target_link_libraries(test-terlml-safetensors
+    PRIVATE
+        terlml-safetensors
+)
+
+add_test(
+    NAME terlml-safetensors
+    COMMAND test-terlml-safetensors
+)
