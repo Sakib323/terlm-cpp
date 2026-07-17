@@ -8,7 +8,7 @@ import torch
 import torch.nn.functional as F
 
 MAGIC = b"THABF32\x00"
-VERSION = 2
+VERSION = 3
 BITLINEAR_EPSILON = 1e-6
 
 
@@ -87,6 +87,7 @@ def attention_block(
     gnorm_weight,
     o_proj_norm_weight,
     o_proj_weight,
+    lower_bound,
     initial_conv_cache,
     initial_recurrent_state,
     epsilon,
@@ -111,6 +112,8 @@ def attention_block(
             f_proj_weight,
         )
     )
+
+    projected_f = lower_bound + (1.0 - lower_bound) * projected_f
 
     projected_g = fused_bitlinear(
         convolved,
@@ -186,6 +189,8 @@ def main():
     o_proj_norm_weight = 0.8 + values(hidden, scale=0.15)
     o_proj_weight = values(hidden, hidden, scale=0.15)
 
+    lower_bound = 0.05 + torch.rand(hidden, dtype=torch.float32) * 0.20
+
     initial_conv_cache = values(batch, hidden, kernel_size, scale=0.4)
     initial_recurrent_state = values(batch, heads, head_dim, scale=0.4)
 
@@ -202,6 +207,7 @@ def main():
         gnorm_weight,
         o_proj_norm_weight,
         o_proj_weight,
+        lower_bound,
         initial_conv_cache,
         initial_recurrent_state,
         epsilon,
@@ -236,6 +242,7 @@ def main():
             g_proj_norm_weight,
             g_proj_weight,
             gnorm_weight,
+            lower_bound,
             o_proj_norm_weight,
             o_proj_weight,
             initial_conv_cache,

@@ -32,7 +32,8 @@ void hgrn_attention_block_f32(
     float * output,
     hgrn_attention_block_output_state final_state,
     float rmsnorm_epsilon,
-    hgrn_attention_block_shape shape
+    hgrn_attention_block_shape shape,
+    const float * lower_bound
 ) {
     assert(shape.hidden > 0);
     assert(shape.heads > 0);
@@ -103,6 +104,13 @@ void hgrn_attention_block_f32(
 
     for (std::size_t index = 0; index < hidden_elements; ++index) {
         projected_f[index] = sigmoid(projected_f[index]);
+
+        if (lower_bound != nullptr) {
+            const float bound = lower_bound[index % shape.hidden];
+            projected_f[index] =
+                bound + (1.0f - bound) * projected_f[index];
+        }
+
         projected_i[index] = silu(projected_i[index]) *
                              (1.0f - projected_f[index]);
     }

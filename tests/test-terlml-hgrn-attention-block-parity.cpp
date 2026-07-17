@@ -14,7 +14,7 @@ constexpr std::array<char, 8> k_magic = {
     'T', 'H', 'A', 'B', 'F', '3', '2', '\0'
 };
 
-constexpr std::uint32_t k_version = 2;
+constexpr std::uint32_t k_version = 3;
 constexpr float k_tolerance = 2e-5f;
 
 struct fixture_header {
@@ -177,6 +177,7 @@ bool test_hgrn_attention_block_parity(const char * path) {
     std::vector<float> g_proj_weight;
 
     std::vector<float> gnorm_weight;
+    std::vector<float> lower_bound;
 
     std::vector<float> o_proj_norm_weight;
     std::vector<float> o_proj_weight;
@@ -197,6 +198,7 @@ bool test_hgrn_attention_block_parity(const char * path) {
         !read_tensor(stream, &g_proj_norm_weight, hidden, "g_proj_norm_weight") ||
         !read_tensor(stream, &g_proj_weight, projection_count, "g_proj_weight") ||
         !read_tensor(stream, &gnorm_weight, hidden, "gnorm_weight") ||
+        !read_tensor(stream, &lower_bound, hidden, "lower_bound") ||
         !read_tensor(stream, &o_proj_norm_weight, hidden, "o_proj_norm_weight") ||
         !read_tensor(stream, &o_proj_weight, projection_count, "o_proj_weight") ||
         !read_tensor(stream, &initial_conv_state, conv_state_count, "initial_conv_state") ||
@@ -244,7 +246,8 @@ bool test_hgrn_attention_block_parity(const char * path) {
             .hidden = hidden,
             .heads = heads,
             .conv_kernel_size = kernel_size,
-        }
+        },
+        lower_bound.data()
     );
 
     return expect_close("block output", actual_output, expected_output) &&

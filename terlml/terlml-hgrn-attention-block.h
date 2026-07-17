@@ -48,7 +48,8 @@ void hgrn_attention_block_f32(
     float * output,
     hgrn_attention_block_output_state final_state,
     float rmsnorm_epsilon,
-    hgrn_attention_block_shape shape
+    hgrn_attention_block_shape shape,
+    const float * lower_bound = nullptr
 );
 
 } // namespace terlml
