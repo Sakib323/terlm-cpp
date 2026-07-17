@@ -299,3 +299,36 @@ add_test(
     NAME terlml-rmsnorm
     COMMAND test-terlml-rmsnorm
 )
+
+add_library(terlml-hgrn-model STATIC
+    terlml-hgrn-model.cpp
+)
+
+target_include_directories(terlml-hgrn-model
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_features(terlml-hgrn-model PUBLIC cxx_std_20)
+
+target_link_libraries(terlml-hgrn-model
+    PUBLIC
+        terlml-fused-bitlinear
+        terlml-hgrn-decoder-layer
+        terlml-hgrn-lower-bounds
+        terlml-rmsnorm
+)
+
+add_executable(test-terlml-hgrn-model
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-hgrn-model.cpp
+)
+
+target_link_libraries(test-terlml-hgrn-model
+    PRIVATE
+        terlml-hgrn-model
+)
+
+add_test(
+    NAME terlml-hgrn-model
+    COMMAND test-terlml-hgrn-model
+)
