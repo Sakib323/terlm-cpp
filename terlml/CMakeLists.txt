@@ -128,6 +128,7 @@ target_compile_features(terlml-hgrn-attention-block PUBLIC cxx_std_20)
 target_link_libraries(terlml-hgrn-attention-block
     PUBLIC
         terlml-causal-conv
+        terlml-fused-bitlinear
         terlml-hgrn-reference
         terlml-rmsnorm-gate
 )

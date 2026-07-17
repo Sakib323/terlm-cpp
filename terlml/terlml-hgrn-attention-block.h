@@ -16,11 +16,18 @@ struct hgrn_attention_block_weights {
     const float * conv_weight;
     const float * conv_bias;
 
+    const float * i_proj_norm_weight;
     const float * i_proj_weight;
+
+    const float * f_proj_norm_weight;
     const float * f_proj_weight;
+
+    const float * g_proj_norm_weight;
     const float * g_proj_weight;
 
     const float * gnorm_weight;
+
+    const float * o_proj_norm_weight;
     const float * o_proj_weight;
 };
 

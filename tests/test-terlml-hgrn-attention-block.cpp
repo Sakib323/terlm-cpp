@@ -1,6 +1,8 @@
 #include "../terlml/terlml-hgrn-attention-block.h"
 
+#include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -141,11 +143,21 @@ bool test_prefill_equals_continuation() {
     std::vector<float> input(input_elements);
     std::vector<float> conv_weight(conv_weight_elements);
     std::vector<float> conv_bias(hidden);
+
+    std::vector<float> i_proj_norm_weight(hidden);
     std::vector<float> i_proj_weight(projection_elements);
+
+    std::vector<float> f_proj_norm_weight(hidden);
     std::vector<float> f_proj_weight(projection_elements);
+
+    std::vector<float> g_proj_norm_weight(hidden);
     std::vector<float> g_proj_weight(projection_elements);
+
     std::vector<float> gnorm_weight(hidden);
+
+    std::vector<float> o_proj_norm_weight(hidden);
     std::vector<float> o_proj_weight(projection_elements);
+
     std::vector<float> initial_conv_state(conv_state_elements);
     std::vector<float> initial_recurrent_state(recurrent_state_elements);
 
@@ -157,36 +169,49 @@ bool test_prefill_equals_continuation() {
         conv_weight[index] = deterministic_value(index + 101, 0.2f);
     }
 
-    for (std::size_t index = 0; index < conv_bias.size(); ++index) {
+    for (std::size_t index = 0; index < hidden; ++index) {
         conv_bias[index] = deterministic_value(index + 211, 0.1f);
-        gnorm_weight[index] = 0.75f + deterministic_value(index + 307, 0.2f);
+        i_proj_norm_weight[index] =
+            0.75f + deterministic_value(index + 307, 0.2f);
+        f_proj_norm_weight[index] =
+            0.75f + deterministic_value(index + 401, 0.2f);
+        g_proj_norm_weight[index] =
+            0.75f + deterministic_value(index + 503, 0.2f);
+        gnorm_weight[index] =
+            0.75f + deterministic_value(index + 607, 0.2f);
+        o_proj_norm_weight[index] =
+            0.75f + deterministic_value(index + 709, 0.2f);
     }
 
     for (std::size_t index = 0; index < projection_elements; ++index) {
-        i_proj_weight[index] = deterministic_value(index + 401, 0.15f);
-        f_proj_weight[index] = deterministic_value(index + 503, 0.15f);
-        g_proj_weight[index] = deterministic_value(index + 607, 0.15f);
-        o_proj_weight[index] = deterministic_value(index + 709, 0.15f);
+        i_proj_weight[index] = deterministic_value(index + 809, 0.15f);
+        f_proj_weight[index] = deterministic_value(index + 907, 0.15f);
+        g_proj_weight[index] = deterministic_value(index + 1009, 0.15f);
+        o_proj_weight[index] = deterministic_value(index + 1103, 0.15f);
     }
 
     for (std::size_t index = 0; index < initial_conv_state.size(); ++index) {
-        initial_conv_state[index] = deterministic_value(index + 809, 0.5f);
+        initial_conv_state[index] = deterministic_value(index + 1201, 0.5f);
     }
 
     for (std::size_t index = 0;
          index < initial_recurrent_state.size();
          ++index) {
         initial_recurrent_state[index] =
-            deterministic_value(index + 907, 0.5f);
+            deterministic_value(index + 1301, 0.5f);
     }
 
     const terlml::hgrn_attention_block_weights weights = {
         .conv_weight = conv_weight.data(),
         .conv_bias = conv_bias.data(),
+        .i_proj_norm_weight = i_proj_norm_weight.data(),
         .i_proj_weight = i_proj_weight.data(),
+        .f_proj_norm_weight = f_proj_norm_weight.data(),
         .f_proj_weight = f_proj_weight.data(),
+        .g_proj_norm_weight = g_proj_norm_weight.data(),
         .g_proj_weight = g_proj_weight.data(),
         .gnorm_weight = gnorm_weight.data(),
+        .o_proj_norm_weight = o_proj_norm_weight.data(),
         .o_proj_weight = o_proj_weight.data(),
     };
 

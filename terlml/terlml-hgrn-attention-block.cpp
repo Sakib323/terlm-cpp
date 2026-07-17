@@ -1,6 +1,7 @@
 #include "terlml-hgrn-attention-block.h"
 
 #include "terlml-causal-conv.h"
+#include "terlml-fused-bitlinear.h"
 #include "terlml-hgrn-reference.h"
 #include "terlml-rmsnorm-gate.h"
 
@@ -12,39 +13,14 @@ namespace terlml {
 
 namespace {
 
+constexpr float k_bitlinear_rmsnorm_epsilon = 1e-6f;
+
 float sigmoid(float value) {
     return 1.0f / (1.0f + std::exp(-value));
 }
 
 float silu(float value) {
     return value / (1.0f + std::exp(-value));
-}
-
-void linear_f32(
-    const float * input,
-    const float * weight,
-    float * output,
-    std::size_t rows,
-    std::size_t input_features,
-    std::size_t output_features
-) {
-    for (std::size_t row = 0; row < rows; ++row) {
-        for (std::size_t output_feature = 0;
-             output_feature < output_features;
-             ++output_feature) {
-            float value = 0.0f;
-
-            for (std::size_t input_feature = 0;
-                 input_feature < input_features;
-                 ++input_feature) {
-                value +=
-                    input[row * input_features + input_feature] *
-                    weight[output_feature * input_features + input_feature];
-            }
-
-            output[row * output_features + output_feature] = value;
-        }
-    }
 }
 
 } // namespace
@@ -66,6 +42,12 @@ void hgrn_attention_block_f32(
     const std::size_t head_dim = shape.hidden / shape.heads;
     const std::size_t token_count = shape.batch * shape.sequence;
     const std::size_t hidden_elements = token_count * shape.hidden;
+
+    const fused_bitlinear_shape projection_shape = {
+        .rows = token_count,
+        .input_features = shape.hidden,
+        .output_features = shape.hidden,
+    };
 
     std::vector<float> convolved(hidden_elements, 0.0f);
     std::vector<float> projected_i(hidden_elements, 0.0f);
@@ -92,31 +74,31 @@ void hgrn_attention_block_f32(
         }
     );
 
-    linear_f32(
+    fused_bitlinear_f32(
         convolved.data(),
+        weights.i_proj_norm_weight,
         weights.i_proj_weight,
         projected_i.data(),
-        token_count,
-        shape.hidden,
-        shape.hidden
+        k_bitlinear_rmsnorm_epsilon,
+        projection_shape
     );
 
-    linear_f32(
+    fused_bitlinear_f32(
         convolved.data(),
+        weights.f_proj_norm_weight,
         weights.f_proj_weight,
         projected_f.data(),
-        token_count,
-        shape.hidden,
-        shape.hidden
+        k_bitlinear_rmsnorm_epsilon,
+        projection_shape
     );
 
-    linear_f32(
+    fused_bitlinear_f32(
         convolved.data(),
+        weights.g_proj_norm_weight,
         weights.g_proj_weight,
         projected_g.data(),
-        token_count,
-        shape.hidden,
-        shape.hidden
+        k_bitlinear_rmsnorm_epsilon,
+        projection_shape
     );
 
     for (std::size_t index = 0; index < hidden_elements; ++index) {
@@ -193,13 +175,13 @@ void hgrn_attention_block_f32(
         }
     );
 
-    linear_f32(
+    fused_bitlinear_f32(
         gated_output.data(),
+        weights.o_proj_norm_weight,
         weights.o_proj_weight,
         output,
-        token_count,
-        shape.hidden,
-        shape.hidden
+        k_bitlinear_rmsnorm_epsilon,
+        projection_shape
     );
 }
 
