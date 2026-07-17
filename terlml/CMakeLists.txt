@@ -218,3 +218,34 @@ add_test(
     COMMAND test-terlml-hgrn-mlp-parity
             ${CMAKE_SOURCE_DIR}/tests/fixtures/hgrn-mlp-parity-f32.bin
 )
+
+add_library(terlml-hgrn-decoder-layer STATIC
+    terlml-hgrn-decoder-layer.cpp
+)
+
+target_include_directories(terlml-hgrn-decoder-layer
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_features(terlml-hgrn-decoder-layer PUBLIC cxx_std_20)
+
+target_link_libraries(terlml-hgrn-decoder-layer
+    PUBLIC
+        terlml-hgrn-attention-block
+        terlml-hgrn-mlp
+)
+
+add_executable(test-terlml-hgrn-decoder-layer
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-hgrn-decoder-layer.cpp
+)
+
+target_link_libraries(test-terlml-hgrn-decoder-layer
+    PRIVATE
+        terlml-hgrn-decoder-layer
+)
+
+add_test(
+    NAME terlml-hgrn-decoder-layer
+    COMMAND test-terlml-hgrn-decoder-layer
+)
