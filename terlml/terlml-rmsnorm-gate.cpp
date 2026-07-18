@@ -28,7 +28,7 @@ void rmsnorm_silu_gate_f32(
             float sum_of_squares = 0.0f;
 
             for (std::size_t d = 0; d < shape.hidden; ++d) {
-                const float value = input[offset + d];
+                const float value = gate[offset + d];
                 sum_of_squares += value * value;
             }
 
@@ -38,10 +38,10 @@ void rmsnorm_silu_gate_f32(
 
             for (std::size_t d = 0; d < shape.hidden; ++d) {
                 output[offset + d] =
-                    input[offset + d] *
+                    gate[offset + d] *
                     inverse_rms *
                     weight[d] *
-                    silu(gate[offset + d]);
+                    silu(input[offset + d]);
             }
         }
     }

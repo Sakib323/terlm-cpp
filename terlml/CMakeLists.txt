@@ -437,3 +437,12 @@ add_test(
     NAME terlml-hgrn-model-real-parity
     COMMAND test-terlml-hgrn-model-real-parity
 )
+
+add_executable(test-terlml-hgrn-layer0-debug
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-hgrn-layer0-debug.cpp
+)
+
+target_link_libraries(test-terlml-hgrn-layer0-debug
+    PRIVATE
+        terlml-hgrn-model-loader
+)
