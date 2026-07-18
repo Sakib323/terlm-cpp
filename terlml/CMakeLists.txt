@@ -423,3 +423,17 @@ target_link_libraries(terlml-hgrn-model-forward-smoke
     PRIVATE
         terlml-hgrn-model-loader
 )
+
+add_executable(test-terlml-hgrn-model-real-parity
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-hgrn-model-real-parity.cpp
+)
+
+target_link_libraries(test-terlml-hgrn-model-real-parity
+    PRIVATE
+        terlml-hgrn-model-loader
+)
+
+add_test(
+    NAME terlml-hgrn-model-real-parity
+    COMMAND test-terlml-hgrn-model-real-parity
+)
