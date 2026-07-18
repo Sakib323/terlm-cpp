@@ -374,3 +374,34 @@ add_test(
     NAME terlml-safetensors
     COMMAND test-terlml-safetensors
 )
+
+add_library(terlml-hgrn-model-loader STATIC
+    terlml-hgrn-model-loader.cpp
+)
+
+target_include_directories(terlml-hgrn-model-loader
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_features(terlml-hgrn-model-loader PUBLIC cxx_std_20)
+
+target_link_libraries(terlml-hgrn-model-loader
+    PUBLIC
+        terlml-hgrn-model
+        terlml-safetensors
+)
+
+add_executable(test-terlml-hgrn-model-loader
+    ${CMAKE_SOURCE_DIR}/tests/test-terlml-hgrn-model-loader.cpp
+)
+
+target_link_libraries(test-terlml-hgrn-model-loader
+    PRIVATE
+        terlml-hgrn-model-loader
+)
+
+add_test(
+    NAME terlml-hgrn-model-loader
+    COMMAND test-terlml-hgrn-model-loader
+)
