@@ -414,3 +414,12 @@ target_link_libraries(terlml-hgrn-model-loader-smoke
     PRIVATE
         terlml-hgrn-model-loader
 )
+
+add_executable(terlml-hgrn-model-forward-smoke
+    ${CMAKE_SOURCE_DIR}/tools/terlml-hgrn-model-forward-smoke.cpp
+)
+
+target_link_libraries(terlml-hgrn-model-forward-smoke
+    PRIVATE
+        terlml-hgrn-model-loader
+)
