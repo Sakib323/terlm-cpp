@@ -405,3 +405,12 @@ add_test(
     NAME terlml-hgrn-model-loader
     COMMAND test-terlml-hgrn-model-loader
 )
+
+add_executable(terlml-hgrn-model-loader-smoke
+    ${CMAKE_SOURCE_DIR}/tools/terlml-hgrn-model-loader-smoke.cpp
+)
+
+target_link_libraries(terlml-hgrn-model-loader-smoke
+    PRIVATE
+        terlml-hgrn-model-loader
+)
