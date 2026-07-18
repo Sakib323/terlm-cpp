@@ -41,6 +41,49 @@ struct error_summary {
     std::size_t maximum_relative_index = 0;
 };
 
+struct layer_trace_writer {
+    std::ofstream * stream;
+};
+
+void write_layer_trace(
+    void * context,
+    std::size_t layer,
+    const float * attention_output,
+    const float * conv_cache,
+    const float * recurrent_state,
+    terlml::hgrn_model_shape shape
+) {
+    auto * writer = static_cast<layer_trace_writer *>(context);
+
+    if (writer == nullptr || writer->stream == nullptr) {
+        return;
+    }
+
+    const std::uint32_t layer_id = static_cast<std::uint32_t>(layer);
+    const std::size_t attention_count =
+        shape.batch * shape.sequence * shape.hidden;
+    const std::size_t conv_count =
+        shape.batch * shape.hidden * shape.conv_kernel_size;
+    const std::size_t recurrent_count = shape.batch * shape.hidden;
+
+    writer->stream->write(
+        reinterpret_cast<const char *>(&layer_id),
+        static_cast<std::streamsize>(sizeof(layer_id))
+    );
+    writer->stream->write(
+        reinterpret_cast<const char *>(attention_output),
+        static_cast<std::streamsize>(attention_count * sizeof(float))
+    );
+    writer->stream->write(
+        reinterpret_cast<const char *>(conv_cache),
+        static_cast<std::streamsize>(conv_count * sizeof(float))
+    );
+    writer->stream->write(
+        reinterpret_cast<const char *>(recurrent_state),
+        static_cast<std::streamsize>(recurrent_count * sizeof(float))
+    );
+}
+
 template <typename T>
 bool read_value(std::ifstream & stream, T * value, const char * name) {
     stream.read(
@@ -278,6 +321,48 @@ bool run_real_parity(
     std::vector<float> actual_conv_state(conv_count, 0.0f);
     std::vector<float> actual_recurrent_state(recurrent_count, 0.0f);
 
+    const char * trace_path = std::getenv("TERLML_CPP_LAYER_TRACE_PATH");
+    std::ofstream trace_stream;
+    layer_trace_writer trace_writer{};
+
+    if (trace_path != nullptr) {
+        trace_stream.open(trace_path, std::ios::binary);
+
+        if (!trace_stream) {
+            std::cerr << "[FAIL] open C++ layer trace: " << trace_path << '\n';
+            return false;
+        }
+
+        constexpr std::array<char, 8> layer_magic = {
+            'T', 'E', 'R', 'L', 'M', 'L', 'Y', 'R'
+        };
+        const std::uint32_t version = 1;
+        const std::uint32_t layers = static_cast<std::uint32_t>(shape.layers);
+        const std::uint32_t hidden = static_cast<std::uint32_t>(shape.hidden);
+        const std::uint32_t kernel =
+            static_cast<std::uint32_t>(shape.conv_kernel_size);
+
+        trace_stream.write(layer_magic.data(), layer_magic.size());
+        trace_stream.write(
+            reinterpret_cast<const char *>(&version),
+            static_cast<std::streamsize>(sizeof(version))
+        );
+        trace_stream.write(
+            reinterpret_cast<const char *>(&layers),
+            static_cast<std::streamsize>(sizeof(layers))
+        );
+        trace_stream.write(
+            reinterpret_cast<const char *>(&hidden),
+            static_cast<std::streamsize>(sizeof(hidden))
+        );
+        trace_stream.write(
+            reinterpret_cast<const char *>(&kernel),
+            static_cast<std::streamsize>(sizeof(kernel))
+        );
+
+        trace_writer.stream = &trace_stream;
+    }
+
     terlml::hgrn_model_f32(
         token_ids.data(),
         storage.weights(),
@@ -290,9 +375,22 @@ bool run_real_parity(
             .conv_cache = actual_conv_state.data(),
             .recurrent_state = actual_recurrent_state.data(),
         },
-        1e-5f,
-        shape
+        1e-6f,
+        shape,
+        trace_path != nullptr ? &write_layer_trace : nullptr,
+        trace_path != nullptr ? &trace_writer : nullptr
     );
+
+    if (trace_path != nullptr) {
+        trace_stream.close();
+
+        if (!trace_stream) {
+            std::cerr << "[FAIL] write C++ layer trace: " << trace_path << '\n';
+            return false;
+        }
+
+        std::cout << "cpp_layer_trace=" << trace_path << '\n';
+    }
 
     if (!all_finite(actual_logits, "logit") ||
         !all_finite(actual_conv_state, "convolution state") ||

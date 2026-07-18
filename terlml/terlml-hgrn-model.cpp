@@ -17,7 +17,9 @@ void hgrn_model_f32(
     float * logits,
     hgrn_model_output_state final_state,
     float rmsnorm_epsilon,
-    hgrn_model_shape shape
+    hgrn_model_shape shape,
+    hgrn_model_layer_trace_callback trace_callback,
+    void * trace_context
 ) {
     assert(token_ids != nullptr);
     assert(weights.embedding_weight != nullptr);
@@ -53,6 +55,7 @@ void hgrn_model_f32(
     std::vector<float> next(hidden_elements, 0.0f);
     std::vector<float> lower_bounds(shape.layers * shape.hidden, 0.0f);
     std::vector<float> normalized(hidden_elements, 0.0f);
+    std::vector<float> attention_trace(hidden_elements, 0.0f);
 
     for (std::size_t row = 0; row < rows; ++row) {
         const std::uint32_t token_id = token_ids[row];
@@ -104,8 +107,20 @@ void hgrn_model_f32(
                 .intermediate = shape.intermediate,
                 .conv_kernel_size = shape.conv_kernel_size,
             },
-            lower_bounds.data() + layer * shape.hidden
+            lower_bounds.data() + layer * shape.hidden,
+            attention_trace.data()
         );
+
+        if (trace_callback != nullptr) {
+            trace_callback(
+                trace_context,
+                layer,
+                attention_trace.data(),
+                final_state.conv_cache + conv_offset,
+                final_state.recurrent_state + recurrent_offset,
+                shape
+            );
+        }
 
         current.swap(next);
     }

@@ -29,7 +29,8 @@ void hgrn_decoder_layer_f32(
     hgrn_attention_block_output_state final_state,
     float rmsnorm_epsilon,
     hgrn_decoder_layer_shape shape,
-    const float * lower_bound = nullptr
+    const float * lower_bound = nullptr,
+    float * attention_output_trace = nullptr
 );
 
 } // namespace terlml

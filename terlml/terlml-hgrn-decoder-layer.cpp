@@ -1,5 +1,6 @@
 #include "terlml-hgrn-decoder-layer.h"
 
+#include <algorithm>
 #include <cassert>
 #include <vector>
 
@@ -13,7 +14,8 @@ void hgrn_decoder_layer_f32(
     hgrn_attention_block_output_state final_state,
     float rmsnorm_epsilon,
     hgrn_decoder_layer_shape shape,
-    const float * lower_bound
+    const float * lower_bound,
+    float * attention_output_trace
 ) {
     assert(shape.batch > 0);
     assert(shape.sequence > 0);
@@ -46,6 +48,14 @@ void hgrn_decoder_layer_f32(
         },
         lower_bound
     );
+
+    if (attention_output_trace != nullptr) {
+        std::copy(
+            attention_output.begin(),
+            attention_output.end(),
+            attention_output_trace
+        );
+    }
 
     for (std::size_t index = 0; index < elements; ++index) {
         after_attention[index] = input[index] + attention_output[index];

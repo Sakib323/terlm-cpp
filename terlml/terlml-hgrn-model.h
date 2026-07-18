@@ -37,6 +37,15 @@ struct hgrn_model_output_state {
     float * recurrent_state;
 };
 
+using hgrn_model_layer_trace_callback = void (*)(
+    void * context,
+    std::size_t layer,
+    const float * attention_output,
+    const float * conv_cache,
+    const float * recurrent_state,
+    hgrn_model_shape shape
+);
+
 void hgrn_model_f32(
     const std::uint32_t * token_ids,
     const hgrn_model_weights & weights,
@@ -44,7 +53,9 @@ void hgrn_model_f32(
     float * logits,
     hgrn_model_output_state final_state,
     float rmsnorm_epsilon,
-    hgrn_model_shape shape
+    hgrn_model_shape shape,
+    hgrn_model_layer_trace_callback trace_callback = nullptr,
+    void * trace_context = nullptr
 );
 
 } // namespace terlml
