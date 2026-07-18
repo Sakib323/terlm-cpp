@@ -65,7 +65,7 @@ std::uint64_t read_u64_le(std::ifstream & file) {
 
 float f16_to_f32(std::uint16_t bits) {
     const std::uint32_t sign = static_cast<std::uint32_t>(bits & 0x8000U) << 16;
-    std::uint32_t exponent = (bits >> 10) & 0x1fU;
+    std::int32_t exponent = static_cast<std::int32_t>((bits >> 10) & 0x1fU);
     std::uint32_t mantissa = bits & 0x03ffU;
     std::uint32_t result = 0;
 
@@ -82,14 +82,14 @@ float f16_to_f32(std::uint16_t bits) {
 
             mantissa &= 0x03ffU;
             result = sign |
-                ((exponent + 112U) << 23) |
+                (static_cast<std::uint32_t>(exponent + 112) << 23) |
                 (mantissa << 13);
         }
     } else if (exponent == 0x1fU) {
         result = sign | 0x7f800000U | (mantissa << 13);
     } else {
         result = sign |
-            ((exponent + 112U) << 23) |
+            (static_cast<std::uint32_t>(exponent + 112) << 23) |
             (mantissa << 13);
     }
 

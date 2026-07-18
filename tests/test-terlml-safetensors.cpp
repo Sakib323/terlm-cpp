@@ -57,7 +57,7 @@ bool test_safetensors_reader() {
         "terlml-safetensors-test.safetensors";
 
     const std::string header =
-        R"({"test.weight":{"dtype":"F16","shape":[2,2],"data_offsets":[0,8]}})";
+        R"({"test.weight":{"dtype":"F16","shape":[6],"data_offsets":[0,12]}})";
 
     {
         std::ofstream file(path, std::ios::binary);
@@ -73,6 +73,8 @@ bool test_safetensors_reader() {
         write_u16_le(file, 0xc000U);
         write_u16_le(file, 0x3800U);
         write_u16_le(file, 0x0000U);
+        write_u16_le(file, 0x0001U);
+        write_u16_le(file, 0x8001U);
     }
 
     try {
@@ -91,9 +93,9 @@ bool test_safetensors_reader() {
         std::filesystem::remove(path);
 
         return expect(info.dtype == "F16", "tensor dtype") &&
-            expect(info.shape == std::vector<std::size_t>({2, 2}), "tensor shape") &&
-            expect(info.begin == 0 && info.end == 8, "tensor offsets") &&
-            expect_close(values, {1.0f, -2.0f, 0.5f, 0.0f}) &&
+            expect(info.shape == std::vector<std::size_t>({6}), "tensor shape") &&
+            expect(info.begin == 0 && info.end == 12, "tensor offsets") &&
+            expect_close(values, {1.0f, -2.0f, 0.5f, 0.0f, 5.960464477539063e-8f, -5.960464477539063e-8f}) &&
             expect(missing_tensor_rejected, "missing tensor rejected");
     } catch (...) {
         std::filesystem::remove(path);
